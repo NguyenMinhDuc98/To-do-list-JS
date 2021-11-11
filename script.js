@@ -33,6 +33,10 @@ class Model {
         : todo
     );
   }
+
+  bindTodoListChanged(callback){
+    this.onTodoListChanged = callback
+  }
 }
 class View {
   constructor() {
@@ -114,12 +118,65 @@ class View {
       });
     }
   }
+
+  bindAddTodo(handler) {
+    this.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (this._todoText) {
+        handler(this._todoText);
+        this._resetInput();
+      }
+    });
+  }
+
+  bindDeleteTodo(handler) {
+    this.todoList.addEventListener("click", (event) => {
+      if (event.target.className === "delete") {
+        const id = parseInt(event.target.parentElement.id);
+
+        handler(id);
+      }
+    });
+  }
+
+  bindToggleTodo(handler) {
+    this.todoList.addEventListener("change", (event) => {
+      if (event.target.type === "checkbox") {
+        const id = parseInt(event.target.parentElement.id);
+
+        handler(id);
+      }
+    });
+  }
 }
 class Controller {
   constructor(model, view) {
     this.model = model;
     this.view = view;
+
+    this.onTodoListChanged(this.model.todos);
+    this.view.bindAddTodo(this.handleAddTodo);
+    this.view.bindDeleteTodo(this.handleDeleteTodo);
+    this.view.bindToggleTodo(this.handleToggleTodo);
   }
+
+  onTodoListChanged = (todos) => {
+    this.view.displayTodos(todos);
+  };
+
+  handleAddTodo = (todoText) => {
+    this.model.addTodo(todoText);
+  };
+  handleEditTodo = (id, todoText) => {
+    this.model.addTodo(id, todoText);
+  };
+  handleDeleteTodo = (id) => {
+    this.model.addTodo(id);
+  };
+  handleToggleTodo = (id) => {
+    this.model.addTodo(id);
+  };
 }
 
 const app = new Controller(new Model(), new View());
